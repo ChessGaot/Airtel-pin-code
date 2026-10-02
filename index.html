@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>India City Town PIN Master</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 25px;
+    background: #f4f6f8;
+}
+
+.container {
+    max-width: 1100px;
+    margin: auto;
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.1);
+}
+
+h2 {
+    margin-top: 0;
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+input {
+    flex: 1;
+    padding: 10px;
+    font-size: 15px;
+}
+
+button {
+    padding: 10px 18px;
+    background: #217346;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #185c37;
+}
+
+.tableBox {
+    max-height: 650px;
+    overflow-y: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    border: 1px solid #ccc;
+    padding: 9px;
+    text-align: left;
+}
+
+th {
+    background: #217346;
+    color: white;
+    position: sticky;
+    top: 0;
+}
+
+tr:nth-child(even) {
+    background: #f7f7f7;
+}
+
+tr:hover {
+    background: #e8f3ec;
+}
+
+#count {
+    margin: 10px 0;
+    font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>India City / Town – PIN Code Master</h2>
+
+<div class="controls">
+
+<input
+    type="text"
+    id="search"
+    placeholder="Search City, Town or PIN Code..."
+    onkeyup="filterTable()">
+
+<button onclick="downloadCSV()">
+Export to Excel
+</button>
+
+</div>
+
+<div id="count"></div>
+
+<div class="tableBox">
+
+<table id="cityTable">
+
+<thead>
+<tr>
+<th>PIN Code</th>
+<th>City / Town Name</th>
+</tr>
+</thead>
+
+<tbody id="tableBody"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<script>
+
+/*
+==================================================
+FULL INDIA CITY/TOWN DATA
+==================================================
+
+FORMAT:
+
+["PIN CODE","CITY NAME"],
+
+Add the complete City/Town master below.
+
+*/
+
+const cityData = [
+
+["110001","New Delhi"],
+["122001","Gurugram"],
+["121001","Faridabad"],
+["201301","Noida"],
+["201001","Ghaziabad"],
+
+["160017","Chandigarh"],
+["143001","Amritsar"],
+["141001","Ludhiana"],
+["144001","Jalandhar"],
+
+["302001","Jaipur"],
+["305001","Ajmer"],
+["342001","Jodhpur"],
+["313001","Udaipur"],
+["324001","Kota"],
+
+["380001","Ahmedabad"],
+["395001","Surat"],
+["390001","Vadodara"],
+["360001","Rajkot"],
+
+["400001","Mumbai"],
+["411001","Pune"],
+["440001","Nagpur"],
+["422001","Nashik"],
+["431001","Chhatrapati Sambhajinagar"],
+
+["462001","Bhopal"],
+["452001","Indore"],
+["474001","Gwalior"],
+["482001","Jabalpur"],
+
+["492001","Raipur"],
+["495001","Bilaspur"],
+
+["226001","Lucknow"],
+["208001","Kanpur"],
+["221001","Varanasi"],
+["211001","Prayagraj"],
+["282001","Agra"],
+["250001","Meerut"],
+["273001","Gorakhpur"],
+
+["800001","Patna"],
+["823001","Gaya"],
+["842001","Muzaffarpur"],
+["812001","Bhagalpur"],
+
+["834001","Ranchi"],
+["831001","Jamshedpur"],
+["826001","Dhanbad"],
+
+["700001","Kolkata"],
+["734001","Siliguri"],
+["713201","Durgapur"],
+
+["751001","Bhubaneswar"],
+["753001","Cuttack"],
+["760001","Berhampur"],
+
+["781001","Guwahati"],
+["793001","Shillong"],
+["795001","Imphal"],
+["796001","Aizawl"],
+["799001","Agartala"],
+["797001","Kohima"],
+["791111","Itanagar"],
+["737101","Gangtok"],
+
+["500001","Hyderabad"],
+["506001","Warangal"],
+
+["520001","Vijayawada"],
+["530001","Visakhapatnam"],
+["522001","Guntur"],
+["517001","Chittoor"],
+
+["560001","Bengaluru"],
+["570001","Mysuru"],
+["575001","Mangaluru"],
+["580001","Hubballi"],
+
+["600001","Chennai"],
+["641001","Coimbatore"],
+["625001","Madurai"],
+["620001","Tiruchirappalli"],
+["636001","Salem"],
+
+["682001","Kochi"],
+["695001","Thiruvananthapuram"],
+["673001","Kozhikode"],
+["680001","Thrissur"],
+
+["403001","Panaji"],
+
+["744101","Port Blair"],
+
+["180001","Jammu"],
+["190001","Srinagar"],
+
+["194101","Leh"],
+
+["248001","Dehradun"],
+["263001","Nainital"],
+["249401","Haridwar"],
+
+["171001","Shimla"],
+["176215","Dharamshala"]
+
+];
+
+
+/* BUILD TABLE */
+
+function buildTable(data) {
+
+    const tbody =
+        document.getElementById("tableBody");
+
+    tbody.innerHTML = "";
+
+    data.forEach(row => {
+
+        const tr =
+            document.createElement("tr");
+
+        tr.innerHTML =
+            "<td>" + row[0] + "</td>" +
+            "<td>" + row[1] + "</td>";
+
+        tbody.appendChild(tr);
+
+    });
+
+    document.getElementById("count")
+        .innerText =
+        "Total Cities / Towns: " + data.length;
+}
+
+
+/* SEARCH */
+
+function filterTable() {
+
+    const search =
+        document.getElementById("search")
+        .value
+        .toLowerCase();
+
+    const filtered =
+        cityData.filter(row =>
+
+            row[0].includes(search) ||
+            row[1].toLowerCase().includes(search)
+
+        );
+
+    buildTable(filtered);
+}
+
+
+/* EXPORT CSV */
+
+function downloadCSV() {
+
+    let csv =
+        "PIN Code,City / Town Name\n";
+
+    cityData.forEach(row => {
+
+        csv +=
+            '"' + row[0] + '",' +
+            '"' + row[1].replace(/"/g,'""') + '"\n';
+
+    });
+
+    const blob =
+        new Blob(
+            [csv],
+            {type:"text/csv;charset=utf-8;"}
+        );
+
+    const link =
+        document.createElement("a");
+
+    link.href =
+        URL.createObjectURL(blob);
+
+    link.download =
+        "India_City_Town_PIN_Master.csv";
+
+    link.click();
+
+}
+
+
+/* LOAD */
+
+buildTable(cityData);
+
+</script>
+
+</body>
+</html>
